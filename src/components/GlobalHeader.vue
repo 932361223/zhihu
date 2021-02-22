@@ -48,6 +48,7 @@ import { GlobalDataProps } from "../store";
 import { useStore } from "vuex";
 import Dropdown from "./Dropdown.vue";
 import DropdownItem from "./DropdownItem.vue";
+import { UserProps } from "@/store";
 // export interface UserProps {
 //   isLogin: boolean;
 //   nickName?: string;
@@ -55,21 +56,21 @@ import DropdownItem from "./DropdownItem.vue";
 // }
 export default defineComponent({
   name: "GlobalHeader",
-  // props: {
-  //   user: {
-  //     type: Object as PropType<UserProps>,
-  //     require: true,
-  //   },
-  // },
+  props: {
+    user: {
+      type: Object as PropType<UserProps>,
+      require: true,
+    },
+  },
   components: {
     Dropdown,
     DropdownItem,
   },
   setup() {
     const store = useStore<GlobalDataProps>();
-    const user = computed(() => store.state.user);
+    // const user = computed(() => store.state.user);
     return {
-      user,
+      // user,
     };
   },
 });

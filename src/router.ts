@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import store from './store'
 import Home from './views/Home.vue'
 import Login from './views/Login.vue'
 import ColumnmDetail from './views/ColumnmDetail.vue'
@@ -16,6 +17,7 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: Login,
+      meta: { redirectAlreadyLogin: true }
     },
     {
       path: '/column/:id',
@@ -25,8 +27,22 @@ const router = createRouter({
     {
       path: '/create',
       name: 'create',
-      component: Create
+      component: Create,
+      meta: { requiredLogin: true }
     }
   ]
+})
+router.beforeEach((to, from, next) => {
+  // if (to.name !== 'login' && !store.state.user.isLogin) {
+  //规则有必须登录
+  if (to.meta.requiredLogin && !store.state.user.isLogin) {
+    next({ name: 'login' })
+    // next('/login')
+    //规则如果登录就跳转主页
+  } else if (to.meta.redirectAlreadyLogin && store.state.user.isLogin) {
+    next('/')
+  } else {
+    next()
+  }
 })
 export default router

@@ -57,8 +57,17 @@ export default defineComponent({
       // console.log("result" + inputRef.value.validateInput());
       if (result) {
         // router.push({ name: "column", params: { id: 1 } });
-        router.push("/");
-        store.commit("login");
+        const payload = {
+          email: emailVal.value,
+          password: passwordVal.value,
+        };
+        // store.dispatch("login", payload).then((data) => { //换成组合dispatch
+        store.dispatch("loginAndFetch", payload).then((data) => {
+          console.log(data);
+          router.push("/");
+        });
+        // router.push("/");
+        // store.commit("login");
       }
     };
     return {

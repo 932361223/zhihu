@@ -30,13 +30,16 @@ import { useStore } from "vuex";
 import { GlobalDataProps } from "../store";
 import ColumnList from "../components/ColumnList.vue";
 // import { testData } from "../testData";
-import { defineComponent, computed } from "vue";
+import { defineComponent, computed, onMounted } from "vue";
 export default defineComponent({
   components: {
     ColumnList,
   },
   setup() {
     const store = useStore<GlobalDataProps>();
+    onMounted(() => {
+      store.dispatch("fetchColumns");
+    });
     const list = computed(() => store.state.columns);
     return {
       // list: testData,

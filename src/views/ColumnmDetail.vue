@@ -4,7 +4,7 @@
          v-if="column">
       <div class="col-3 text-center">
         <!-- && column.avatar.fitUrl -->
-        <img :src="column.avatar "
+        <img :src="column.avatar&&column.avatar.url"
              :alt="column.title"
              class="rounded-circle border w-100">
       </div>
@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from "vue";
+import { defineComponent, computed, onMounted } from "vue";
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
 // import { testData, testPosts } from "../testData";
@@ -30,7 +30,12 @@ export default defineComponent({
   setup() {
     const route = useRoute();
     const store = useStore();
-    const currentId = +route.params.id;
+    // const currentId = +route.params.id; 已经是字符串不需要转换
+    const currentId = route.params.id;
+    onMounted(() => {
+      store.dispatch("fetchColumn", currentId);
+      store.dispatch("fetchPosts", currentId);
+    });
     // const column = testData.find((c) => c.id === currentId);
     // const list = testPosts.filter((post) => post.columnId === currentId);
     const column = computed(() => store.getters.getColumnById(currentId));
