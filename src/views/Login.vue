@@ -28,6 +28,7 @@
 import ValidateInput, { RulesProp } from "../components/ValidateInput.vue";
 import { useStore } from "vuex";
 import ValidateForm from "../components/ValidateForm.vue";
+import createMessage from "@/components/createMessage";
 import { useRouter } from "vue-router";
 import { defineComponent, ref } from "vue";
 export default defineComponent({
@@ -60,12 +61,21 @@ export default defineComponent({
         const payload = {
           email: emailVal.value,
           password: passwordVal.value,
+          icode: "A6B3299F3F2AABD5",
         };
         // store.dispatch("login", payload).then((data) => { //换成组合dispatch
-        store.dispatch("loginAndFetch", payload).then((data) => {
-          console.log(data);
-          router.push("/");
-        });
+        store
+          .dispatch("loginAndFetch", payload)
+          .then((data) => {
+            createMessage("登录成功 2秒跳转首页", "success");
+            setTimeout(() => {
+              router.push("/");
+            }, 2000);
+          })
+          .catch((e) => {
+            //防止App.vue 抛出红色报错
+            console.log(e);
+          });
         // router.push("/");
         // store.commit("login");
       }

@@ -10,8 +10,13 @@ export interface UserProps {
   avatar?: ImageProps;
   description?: string;
 }
+export interface GlobalErrorProps {
+  status: boolean;
+  message?: string;
+}
 export interface GlobalDataProps {
   token: string;
+  error: GlobalErrorProps;
   loading: boolean;
   columns: ColumnProps[];
   posts: PostProps[];
@@ -52,7 +57,8 @@ export interface PostProps {
 }
 const store = createStore<GlobalDataProps>({
   state: {
-    token: '',
+    token: localStorage.getItem('token') || '',
+    error: { status: false },
     // columns: testData,
     loading: false,
     columns: [],
@@ -71,6 +77,7 @@ const store = createStore<GlobalDataProps>({
     login(state, rawData) {
       const { token } = rawData.data
       state.token = token
+      localStorage.setItem('token', token)
       axios.defaults.headers.common.Authorization = `Bearer ${token}`
     },
     createPost(state, newPost) {
@@ -91,6 +98,10 @@ const store = createStore<GlobalDataProps>({
     // loading...
     setLoading(state, status) {
       state.loading = status
+    },
+    //设置状态码
+    setError(state, e: GlobalErrorProps) {
+      state.error = e
     },
   },
   actions: {
