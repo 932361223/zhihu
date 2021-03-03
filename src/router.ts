@@ -1,7 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import store from './store'
+import axios from 'axios'
 import Home from './views/Home.vue'
 import Login from './views/Login.vue'
+import Signup from './views/Signup.vue';
 import ColumnmDetail from './views/ColumnmDetail.vue'
 import Create from './views/CreatePost.vue'
 const routerHistory = createWebHistory()
@@ -20,6 +22,12 @@ const router = createRouter({
       meta: { redirectAlreadyLogin: true }
     },
     {
+      path: '/Signup',
+      name: 'Signup',
+      component: Signup,
+      meta: { redirectAlreadyLogin: true }
+    },
+    {
       path: '/column/:id',
       name: 'column',
       component: ColumnmDetail,
@@ -35,14 +43,44 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   // if (to.name !== 'login' && !store.state.user.isLogin) {
   //规则有必须登录
-  if (to.meta.requiredLogin && !store.state.user.isLogin) {
-    next({ name: 'login' })
-    // next('/login')
-    //规则如果登录就跳转主页
-  } else if (to.meta.redirectAlreadyLogin && store.state.user.isLogin) {
-    next('/')
+  // if (to.meta.requiredLogin && !store.state.user.isLogin) {
+  //   next({ name: 'login' })
+  //   // next('/login')
+  //   //规则如果登录就跳转主页
+  // } else if (to.meta.redirectAlreadyLogin && store.state.user.isLogin) {
+  //   next('/')
+  // } else {
+  //   next()
+  // }
+  const { user, token } = store.state
+  const { requiredLogin, redirectAlreadyLogin } = to.meta
+  if (!user.isLogin) {
+    if (token) {
+      axios.defaults.headers.common.Authorization = `Bearer ${token}`
+      store.dispatch('fetchCurrentUser').then(() => {
+        if (redirectAlreadyLogin) {
+          next('/')
+        } else {
+          next()
+        }
+      }).catch(e => {
+        console.error(e)
+        store.commit('logout')
+        next('login')
+      })
+    } else {
+      if (requiredLogin) {
+        next('login')
+      } else {
+        next()
+      }
+    }
   } else {
-    next()
+    if (redirectAlreadyLogin) {
+      next('/')
+    } else {
+      next()
+    }
   }
 })
 export default router

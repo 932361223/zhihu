@@ -22,6 +22,7 @@ import { defineComponent, computed, onMounted } from "vue";
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
 // import { testData, testPosts } from "../testData";
+import { addColumnAvatar } from "../helper";
 import PostList from "../components/PostList.vue";
 export default defineComponent({
   components: {
@@ -38,7 +39,13 @@ export default defineComponent({
     });
     // const column = testData.find((c) => c.id === currentId);
     // const list = testPosts.filter((post) => post.columnId === currentId);
-    const column = computed(() => store.getters.getColumnById(currentId));
+    const column = computed(() => {
+      const selectColumn = store.getters.getColumnById(currentId);
+      if (selectColumn) {
+        addColumnAvatar(selectColumn, 100, 100);
+      }
+      return selectColumn;
+    });
     const list = computed(() => store.getters.getPostsByCid(currentId));
     return {
       route,

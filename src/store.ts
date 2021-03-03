@@ -1,6 +1,11 @@
 import { createStore, Commit } from 'vuex'
 // import { testData, testPosts, } from "./testData";
 import axios from 'axios'
+export interface ResponseType<P = {}> {
+  code: number;
+  msg: string;
+  data: P;
+}
 export interface UserProps {
   isLogin: boolean;
   nickName?: string;
@@ -25,6 +30,7 @@ export interface GlobalDataProps {
 const getAndCommit = async (url: string, mutationName: string, commit: Commit) => {
   const { data } = await axios.get(url)
   commit(mutationName, data)
+  return data
 }
 const postAndCommit = async (url: string, mutationName: string, commit: Commit, payload: any) => {
   console.log(payload);
@@ -33,10 +39,11 @@ const postAndCommit = async (url: string, mutationName: string, commit: Commit, 
   return data
 }
 
-interface ImageProps {
+export interface ImageProps {
   _id?: string;
   url?: string;
   createdAt?: string;
+  fitUrl?: string;
 }
 export interface ColumnProps {
   _id: number;
@@ -79,6 +86,12 @@ const store = createStore<GlobalDataProps>({
       state.token = token
       localStorage.setItem('token', token)
       axios.defaults.headers.common.Authorization = `Bearer ${token}`
+    },
+    logout(state) {
+      state.token = ''
+      state.user = { isLogin: false }
+      localStorage.remove('token')
+      delete axios.defaults.headers.common.Authorization
     },
     createPost(state, newPost) {
       state.posts.push(newPost)
@@ -137,6 +150,9 @@ const store = createStore<GlobalDataProps>({
     },
     login({ commit }, payload) {
       return postAndCommit('/user/login', 'login', commit, payload)
+    },
+    createPost({ commit }, payload) {
+      return postAndCommit('/posts', 'createPost', commit, { method: 'post', data: payload })
     },
     // 合并dispatch
     loginAndFetch({ dispatch }, loginData) {

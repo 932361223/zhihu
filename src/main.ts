@@ -6,8 +6,8 @@ import axios from 'axios'
 axios.defaults.baseURL = 'http://apis.imooc.com/api/' //拦截 直接写后面的请求即可
 // 保留原有的api 在后面自动加上params
 axios.interceptors.request.use(config => {
-  config.params = { ...config.params, icode: 'A6B3299F3F2AABD5' }
-  // 3D9E304DF0D03DF9
+  config.params = { ...config.params, icode: '3D9E304DF0D03DF9' }
+  //   A6B3299F3F2AABD5
   return config
 })
 axios.interceptors.request.use(config => {

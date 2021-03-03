@@ -1,18 +1,22 @@
 <template>
   <div class="create-post-page">
     <h4>新建文章</h4>
-    <!-- <h4>{{isEditMode ? '编辑文章' : '新建文章'}}</h4>
-    <uploader
-      action="/upload"
-      :beforeUpload="uploadCheck"
-      @file-uploaded="handleFileUploaded"
-      :uploaded="uploadedData"
-      class="d-flex align-items-center justify-content-center bg-light text-secondary w-100 my-4"
-    >
+    <input type="file"
+           class="file-input"
+           ref="fileInput"
+           @change="handleFileChange">
+    <!-- <h4>{{isEditMode ? '编辑文章' : '新建文章'}}</h4> -->
+    <!-- class通过v-bind="$attr"接收 -->
+    <!-- <uploader action="/upload"
+              :beforeUpload="uploadCheck"
+              @file-uploaded="handleFileUploaded"
+              :uploaded="uploadedData"
+              class="d-flex align-items-center justify-content-center bg-light text-secondary w-100 my-4">
       <h2>点击上传头图</h2>
       <template #loading>
         <div class="d-flex">
-          <div class="spinner-border text-secondary" role="status">
+          <div class="spinner-border text-secondary"
+               role="status">
             <span class="sr-only">Loading...</span>
           </div>
           <h2>正在上传</h2>
@@ -55,13 +59,13 @@
 import { defineComponent, ref, onMounted } from "vue";
 import { useStore } from "vuex";
 import { useRouter, useRoute } from "vue-router";
-// import { GlobalDataProps, PostProps, ResponseType, ImageProps } from "../store";
-import { GlobalDataProps, PostProps } from "../store";
+import { GlobalDataProps, PostProps, ResponseType, ImageProps } from "../store";
 // import { GlobalDataProps } from "../store";
+import axios from "axios";
 import ValidateInput, { RulesProp } from "../components/ValidateInput.vue";
 import ValidateForm from "../components/ValidateForm.vue";
 // import Uploader from "../components/Uploader.vue";
-// import createMessage from "../components/createMessage";
+import createMessage from "../components/createMessage";
 // import { beforeUploadCheck } from "../helper";
 export default defineComponent({
   name: "Login",
@@ -71,9 +75,13 @@ export default defineComponent({
     // Uploader,
   },
   setup(props) {
+    const uploadedData = ref();
     const store = useStore<GlobalDataProps>();
     const router = useRouter();
+    const route = useRoute();
+    const isEditMode = !!route.query.id;
     const titleVal = ref("");
+    let imageId = "";
     const titleRules: RulesProp = [
       { type: "required", message: "文章标题不能为空" },
     ];
@@ -81,9 +89,64 @@ export default defineComponent({
     const contentRules: RulesProp = [
       { type: "required", message: "文章详情不能为空" },
     ];
+    const handleFileUploaded = (rawData: ResponseType<ImageProps>) => {
+      if (rawData.data._id) {
+        imageId = rawData.data._id;
+      }
+    };
+    onMounted(() => {
+      // if (isEditMode) {
+      //   store
+      //     .dispatch("fetchPost", route.query.id)
+      //     .then((rawData: ResponseType<PostProps>) => {
+      //       const currentPost = rawData.data;
+      //       if (currentPost.image) {
+      //         uploadedData.value = { data: currentPost.image };
+      //       }
+      //       titleVal.value = currentPost.title;
+      //       contentVal.value = currentPost.content || "";
+      //     });
+      // }
+    });
+    const handleFileChange = (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      const files = target.files;
+      if (files) {
+        const uploadedFile = files[0];
+        // const files = Array.from(files);
+
+        // fileStatus.value = "loading";
+        const formData = new FormData();
+        formData.append(uploadedFile.name, uploadedFile);
+        formData.append("icode", "3D9E304DF0D03DF9");
+        // console.log(files[0]);
+        axios
+          .post("/upload", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          })
+          .then((resp) => {
+            console.log(resp);
+
+            // fileStatus.value = "success";
+            // uploadedData.value = resp.data;
+            // context.emit("file-uploaded", resp.data);
+          });
+        //   .catch((error) => {
+        //     fileStatus.value = "error";
+        //     context.emit("file-uploaded-error", { error });
+        //   })
+        //   .finally(() => {
+        //     if (fileInput.value) {
+        //       fileInput.value.value = "";
+        //     }
+        //   });
+      }
+    };
     const onFormSubmit = (result: boolean) => {
       if (result) {
-        const { column } = store.state.user;
+        const { column, _id } = store.state.user;
         if (column) {
           const newPost: PostProps = {
             _id: "" + new Date().getTime(),
@@ -91,19 +154,54 @@ export default defineComponent({
             content: contentVal.value,
             column,
             createdAt: new Date().toLocaleString(),
+            author: _id,
           };
-
-          store.commit("createPost", newPost);
-          router.push({ name: "column", params: { id: column } });
+          if (imageId) {
+            newPost.image = imageId;
+          }
+          const actionName = isEditMode ? "updatePost" : "createPost";
+          const sendData = isEditMode
+            ? {
+                id: route.query.id,
+                payload: newPost,
+              }
+            : newPost;
+          store.dispatch(actionName, sendData).then(() => {
+            createMessage("发表成功，2秒后跳转到文章", "success", 2000);
+            setTimeout(() => {
+              router.push({ name: "column", params: { id: column } });
+            }, 2000);
+          });
+          // store.commit("createPost", newPost);
+          // router.push({ name: "column", params: { id: column } });
         }
       }
     };
+    // const uploadCheck = (file: File) => {
+    //   const result = beforeUploadCheck(file, {
+    //     format: ["image/jpeg", "image/png"],
+    //     size: 1,
+    //   });
+    //   const { passed, error } = result;
+    //   if (error === "format") {
+    //     createMessage("上传图片只能是 JPG/PNG 格式!", "error");
+    //   }
+    //   if (error === "size") {
+    //     createMessage("上传图片大小不能超过 1Mb", "error");
+    //   }
+    //   return passed;
+    // };
     return {
       titleVal,
       contentVal,
       titleRules,
       contentRules,
       onFormSubmit,
+      // uploadCheck,
+      uploadedData,
+      isEditMode,
+      handleFileUploaded,
+      handleFileChange,
     };
   },
 });

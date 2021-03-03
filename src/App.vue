@@ -42,16 +42,16 @@ export default defineComponent({
     const store = useStore<GlobalDataProps>();
     const currentUser = computed(() => store.state.user);
     const isloading = computed(() => store.state.loading);
-    const token = computed(() => store.state.token);
+    // const token = computed(() => store.state.token);
     const error = computed(() => store.state.error);
-    onMounted(() => {
-      // 没登陆且有token就自动登录
-      if (!currentUser.value.isLogin && token.value) {
-        console.log(666);
-        axios.defaults.headers.common.Authorization = `Bearer ${token.value}`;
-        store.dispatch("fetchCurrentUser");
-      }
-    });
+    // onMounted(() => {  // 在router统一做处理
+    //   // 没登陆且有token就自动登录
+    //   if (!currentUser.value.isLogin && token.value) {
+    //     console.log(666);
+    //     axios.defaults.headers.common.Authorization = `Bearer ${token.value}`;
+    //     store.dispatch("fetchCurrentUser");
+    //   }
+    // });
     watch(
       //getter 相当于监听这个值
       () => error.value.status,
