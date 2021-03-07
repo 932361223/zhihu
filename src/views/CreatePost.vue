@@ -1,13 +1,13 @@
 <template>
   <div class="create-post-page">
     <h4>新建文章</h4>
-    <input type="file"
+    <!-- <input type="file"
            class="file-input"
            ref="fileInput"
-           @change="handleFileChange">
+           @change="handleFileChange"> -->
     <!-- <h4>{{isEditMode ? '编辑文章' : '新建文章'}}</h4> -->
     <!-- class通过v-bind="$attr"接收 -->
-    <!-- <uploader action="/upload"
+    <uploader action="/upload"
               :beforeUpload="uploadCheck"
               @file-uploaded="handleFileUploaded"
               :uploaded="uploadedData"
@@ -17,18 +17,20 @@
         <div class="d-flex">
           <div class="spinner-border text-secondary"
                role="status">
-            <span class="sr-only">Loading...</span>
+            <span>Loading...</span>
           </div>
           <h2>正在上传</h2>
         </div>
       </template>
+      <!-- 插槽传值 -->
       <template #uploaded="dataProps">
+        <!-- <template #uploaded> -->
         <div class="uploaded-area">
           <img :src="dataProps.uploadedData.data.url">
           <h3>点击重新上传</h3>
         </div>
       </template>
-    </uploader> -->
+    </uploader>
     <validate-form @form-submit="onFormSubmit">
       <div class="mb-3">
         <label class="form-label">文章标题：</label>
@@ -64,15 +66,15 @@ import { GlobalDataProps, PostProps, ResponseType, ImageProps } from "../store";
 import axios from "axios";
 import ValidateInput, { RulesProp } from "../components/ValidateInput.vue";
 import ValidateForm from "../components/ValidateForm.vue";
-// import Uploader from "../components/Uploader.vue";
+import Uploader from "../components/Uploader.vue";
 import createMessage from "../components/createMessage";
-// import { beforeUploadCheck } from "../helper";
+import { beforeUploadCheck } from "../helper";
 export default defineComponent({
   name: "Login",
   components: {
     ValidateInput,
     ValidateForm,
-    // Uploader,
+    Uploader,
   },
   setup(props) {
     const uploadedData = ref();
@@ -92,6 +94,7 @@ export default defineComponent({
     const handleFileUploaded = (rawData: ResponseType<ImageProps>) => {
       if (rawData.data._id) {
         imageId = rawData.data._id;
+        createMessage(`上传图片ID ${rawData.data._id}`, "success");
       }
     };
     onMounted(() => {
@@ -146,6 +149,7 @@ export default defineComponent({
     };
     const onFormSubmit = (result: boolean) => {
       if (result) {
+        // 专栏id和用户id
         const { column, _id } = store.state.user;
         if (column) {
           const newPost: PostProps = {
@@ -155,49 +159,68 @@ export default defineComponent({
             column,
             createdAt: new Date().toLocaleString(),
             author: _id,
+            // icode: "3D9E304DF0D03DF9",
           };
           if (imageId) {
             newPost.image = imageId;
           }
-          const actionName = isEditMode ? "updatePost" : "createPost";
-          const sendData = isEditMode
-            ? {
-                id: route.query.id,
-                payload: newPost,
-              }
-            : newPost;
-          store.dispatch(actionName, sendData).then(() => {
+          console.log(newPost);
+
+          store.dispatch("createPost", newPost).then((res) => {
+            console.log(res);
+
             createMessage("发表成功，2秒后跳转到文章", "success", 2000);
             setTimeout(() => {
               router.push({ name: "column", params: { id: column } });
             }, 2000);
           });
+          // const actionName = isEditMode ? "updatePost" : "createPost";
+          // const sendData = isEditMode
+          //   ? {
+          //       id: route.query.id,
+          //       payload: newPost,
+          //     }
+          //   : newPost;
+          // store.dispatch(actionName, sendData).then(() => {
+          //   createMessage("发表成功，2秒后跳转到文章", "success", 2000);
+          //   setTimeout(() => {
+          //     router.push({ name: "column", params: { id: column } });
+          //   }, 2000);
+          // });
           // store.commit("createPost", newPost);
           // router.push({ name: "column", params: { id: column } });
         }
       }
     };
-    // const uploadCheck = (file: File) => {
-    //   const result = beforeUploadCheck(file, {
-    //     format: ["image/jpeg", "image/png"],
-    //     size: 1,
-    //   });
-    //   const { passed, error } = result;
-    //   if (error === "format") {
-    //     createMessage("上传图片只能是 JPG/PNG 格式!", "error");
-    //   }
-    //   if (error === "size") {
-    //     createMessage("上传图片大小不能超过 1Mb", "error");
-    //   }
-    //   return passed;
-    // };
+    // CreatePost检查方法传给uploader;uploader再传到helper
+    const uploadCheck = (file: File) => {
+      // const isJPG = file.type === "image/jpeg";
+      // if (!isJPG) {
+      //   createMessage("上传图片只能是JPG格式", "error");
+      // }
+      // return isJPG;
+      const result = beforeUploadCheck(file, {
+        format: ["image/jpeg", "image/png"],
+        size: 1,
+      });
+      const { passed, error } = result;
+
+      if (error === "format") {
+        createMessage("上传图片只能是 JPG/PNG 格式!", "error");
+      }
+      if (error === "size") {
+        createMessage("上传图片大小不能超过 1Mb", "error");
+      }
+      return passed;
+    };
+
     return {
       titleVal,
       contentVal,
       titleRules,
       contentRules,
       onFormSubmit,
-      // uploadCheck,
+      uploadCheck,
       uploadedData,
       isEditMode,
       handleFileUploaded,

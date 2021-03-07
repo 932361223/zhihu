@@ -61,7 +61,7 @@ export default defineComponent({
         const payload = {
           email: emailVal.value,
           password: passwordVal.value,
-          icode: "A6B3299F3F2AABD5",
+          icode: "3D9E304DF0D03DF9",
         };
         // store.dispatch("login", payload).then((data) => { //换成组合dispatch
         store

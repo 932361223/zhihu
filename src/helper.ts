@@ -25,11 +25,13 @@ interface CheckCondition {
   size?: number;
 }
 type ErrorType = 'size' | 'format' | null
+// {format: ["image/jpeg", "image/png"], size: 1},
 export function beforeUploadCheck(file: File, condition: CheckCondition) {
   const { format, size } = condition
   const isValidFormat = format ? format.includes(file.type) : true
   const isValidSize = size ? (file.size / 1024 / 1024 < size) : true
   let error: ErrorType = null
+  // 哪个不符合就返回哪个
   if (!isValidFormat) {
     error = 'format'
   }

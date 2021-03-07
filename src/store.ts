@@ -4,7 +4,7 @@ import axios from 'axios'
 export interface ResponseType<P = {}> {
   code: number;
   msg: string;
-  data: P;
+  data: P;//泛型 ResponseType<ImageProps>
 }
 export interface UserProps {
   isLogin: boolean;
@@ -61,6 +61,7 @@ export interface PostProps {
   column: string;
   author?: string | UserProps;
   isHTML?: boolean;
+  icode?: string;
 }
 const store = createStore<GlobalDataProps>({
   state: {
@@ -152,7 +153,7 @@ const store = createStore<GlobalDataProps>({
       return postAndCommit('/user/login', 'login', commit, payload)
     },
     createPost({ commit }, payload) {
-      return postAndCommit('/posts', 'createPost', commit, { method: 'post', data: payload })
+      return postAndCommit("/posts", 'createPost', commit, { method: 'post', data: payload })
     },
     // 合并dispatch
     loginAndFetch({ dispatch }, loginData) {

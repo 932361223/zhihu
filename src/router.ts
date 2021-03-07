@@ -55,6 +55,7 @@ router.beforeEach((to, from, next) => {
   const { user, token } = store.state
   const { requiredLogin, redirectAlreadyLogin } = to.meta
   if (!user.isLogin) {
+    // 未登录
     if (token) {
       axios.defaults.headers.common.Authorization = `Bearer ${token}`
       store.dispatch('fetchCurrentUser').then(() => {
@@ -64,7 +65,9 @@ router.beforeEach((to, from, next) => {
           next()
         }
       }).catch(e => {
+        // 可能网络不好失败，或者token没用
         console.error(e)
+        // localStorage.removeItem('token') //直接清除 store里面还有token，行不通
         store.commit('logout')
         next('login')
       })
@@ -76,6 +79,7 @@ router.beforeEach((to, from, next) => {
       }
     }
   } else {
+    //已经登录
     if (redirectAlreadyLogin) {
       next('/')
     } else {
